@@ -1,5 +1,5 @@
 from django.utils import timezone
-
+from actions.handlers import HANDLERS
 from actions.models import (
     WorkflowExecution,
     StepExecution,
@@ -24,11 +24,22 @@ class WorkflowRunner:
 
             for step in workflow.steps.all():
 
+                handler = HANDLERS.get(
+                    step.step_type
+                )
+
+                if handler:
+
+                    context = handler.run(
+                        step.config,
+                        context
+                    )
+
                 StepExecution.objects.create(
                     execution=execution,
                     workflow_step=step,
                     status="success",
-                    input_data=context,
+                    input_data=input_data,
                     output_data=context,
                 )
 
