@@ -20,6 +20,7 @@ class WorkflowStep(models.Model):
         ("create_record", "Create Record"),
         ("send_email", "Send Email"),
         ("generate_report", "Generate Report"),
+        ("http_request", "HTTP Request"),
     ]
 
     workflow = models.ForeignKey(
@@ -41,6 +42,11 @@ class WorkflowStep(models.Model):
 
     class Meta:
         ordering = ["order"]
+
+        unique_together = (
+            "workflow",
+            "order",
+        )
 
     def __str__(self):
         return f"{self.workflow.name} - Step {self.order}"
