@@ -1,7 +1,26 @@
 from django.db import models
-
+import uuid
 
 class Workflow(models.Model):
+    TRIGGERS = [
+        ("manual", "Manual"),
+        ("webhook", "Webhook"),
+    ]
+
+    trigger_type = models.CharField(
+        max_length=20,
+        choices=TRIGGERS,
+        default="manual",
+        blank=True
+    )
+
+    webhook_key = models.UUIDField(
+        default=uuid.uuid4,
+        #editable=False,
+        unique=True,
+    )
+
+
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     active = models.BooleanField(default=True)
