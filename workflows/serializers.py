@@ -9,11 +9,12 @@ class WorkflowStepSerializer(serializers.ModelSerializer):
 
 
 class WorkflowSerializer(serializers.ModelSerializer):
-    steps = WorkflowStepSerializer(
-        many=True,
-        read_only=True
-    )
+
+    webhook_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Workflow
         fields = "__all__"
+
+    def get_webhook_url(self, obj):
+        return f"/api/webhook/{obj.webhook_key}/"
