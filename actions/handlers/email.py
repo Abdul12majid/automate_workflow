@@ -1,12 +1,24 @@
+from actions.utils.variables import insert
+
+
 class EmailHandler:
 
     def run(self, config, context):
 
-        recipient = config.get("recipient")
+        recipient = insert(
+            config.get("recipient"),
+            context
+        )
+
+        subject = insert(
+            config.get("subject", ""),
+            context
+        )
 
         context["email_sent"] = {
             "recipient": recipient,
-            "status": "sent"
+            "subject": subject,
+            "status": "sent",
         }
 
         return context
