@@ -40,6 +40,7 @@ class WorkflowStep(models.Model):
         ("send_email", "Send Email"),
         ("generate_report", "Generate Report"),
         ("http_request", "HTTP Request"),
+        ("ai_extract", "AI Extract"),
     ]
 
     workflow = models.ForeignKey(
