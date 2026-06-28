@@ -57,16 +57,13 @@ class WorkflowStep(models.Model):
     )
 
     config = models.JSONField(default=dict)
-
+    true_step = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL, related_name="true_branches")
+    false_step = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL, related_name="false_branches")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        unique_together = ("workflow", "order")
         ordering = ["order"]
-
-        unique_together = (
-            "workflow",
-            "order",
-        )
 
     def __str__(self):
         return f"{self.workflow.name} - Step {self.order}"

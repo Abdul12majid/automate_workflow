@@ -1,4 +1,5 @@
 from django.utils import timezone
+
 from actions.handlers import HANDLERS
 from actions.models import (
     WorkflowExecution,
@@ -20,27 +21,68 @@ class WorkflowRunner:
 
         context = input_data.copy()
 
+        current_step = (
+            workflow.steps
+            .order_by("order")
+            .first()
+        )
+
         try:
 
-            for step in workflow.steps.all():
+            while current_step:
 
                 handler = HANDLERS.get(
-                    step.step_type
+                    current_step.step_type
                 )
 
-                if handler:
-
-                    context = handler.run(
-                        step.config,
-                        context
+                if not handler:
+                    raise Exception(
+                        f"No handler for '{current_step.step_type}'"
                     )
+
+                result = handler.run(
+                    current_step.config,
+                    context
+                )
+
+                # Condition step
+                if current_step.step_type == "condition":
+
+                    StepExecution.objects.create(
+                        execution=execution,
+                        workflow_step=current_step,
+                        status="success",
+                        input_data=context,
+                        output_data={
+                            "result": result
+                        },
+                    )
+
+                    if result:
+                        current_step = current_step.true_step
+                    else:
+                        current_step = current_step.false_step
+
+                    continue
+
+                # Normal steps
+                context = result
 
                 StepExecution.objects.create(
                     execution=execution,
-                    workflow_step=step,
+                    workflow_step=current_step,
                     status="success",
                     input_data=input_data,
                     output_data=context,
+                )
+
+                current_step = (
+                    workflow.steps
+                    .filter(
+                        order__gt=current_step.order
+                    )
+                    .order_by("order")
+                    .first()
                 )
 
             execution.status = "completed"
